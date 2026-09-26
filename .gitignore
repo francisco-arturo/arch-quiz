@@ -1,0 +1,18 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Logs and debug artifacts
+*.log
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+.venv/
+__pycache__/
+
+# Do NOT ignore dependency lockfiles: they are part of the verification
+# baseline. See AGENTS.md and docs/HARNESS.md.

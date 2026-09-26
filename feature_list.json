@@ -1,0 +1,77 @@
+{
+  "note": "STARTER PLAN, not a settled specification. This is a proposed decomposition of an archetype quiz. Confirm or edit it with the user before the first implementation session. See AGENTS.md > Feature List Rules.",
+  "features": [
+    {
+      "id": "feat-001",
+      "name": "Verification Baseline",
+      "description": "Choose the stack, add a dependency lockfile, and replace the init.sh placeholder with a real verification command. This is the gate for every other feature.",
+      "verification": "./init.sh exits 0 and runs at least one real product check (test, type-check, or lint)",
+      "dependencies": [],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-002",
+      "name": "Quiz Content Model",
+      "description": "Define the archetypes and the question set as reviewable data, separate from any presentation or scoring code.",
+      "verification": "Data loads successfully and every question maps to a known archetype",
+      "dependencies": ["feat-001"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-003",
+      "name": "Scoring Engine",
+      "description": "Turn a complete set of answers into a deterministic score per archetype.",
+      "verification": "Unit tests cover a full answer set, an empty answer set, and a tied result",
+      "dependencies": ["feat-002"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-004",
+      "name": "Result Resolution",
+      "description": "Resolve scores into one primary archetype plus runner-ups, with an explicit and tested rule for ties.",
+      "verification": "Tie-breaking rule is documented and covered by a test",
+      "dependencies": ["feat-003"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-005",
+      "name": "Quiz Flow",
+      "description": "Present questions, collect answers, and advance through the quiz to completion.",
+      "verification": "A user can complete the quiz end to end and reach the result step",
+      "dependencies": ["feat-004"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-006",
+      "name": "Result Presentation",
+      "description": "Show the resolved archetype with its description and a breakdown of the contributing scores.",
+      "verification": "Result screen renders the primary archetype returned by the scoring engine",
+      "dependencies": ["feat-005"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-007",
+      "name": "End-to-End Verification",
+      "description": "Add Layer 3 verification covering the full path from first question to rendered result.",
+      "verification": "One automated end-to-end run exercises the complete quiz journey",
+      "dependencies": ["feat-006"],
+      "status": "not-started",
+      "evidence": ""
+    },
+    {
+      "id": "feat-008",
+      "name": "Result Persistence",
+      "description": "Persist a completed result so it survives a restart, and define what happens on a re-take.",
+      "verification": "Result survives restart; re-taking the quiz is handled per the documented rule",
+      "dependencies": ["feat-007"],
+      "status": "not-started",
+      "evidence": ""
+    }
+  ]
+}
