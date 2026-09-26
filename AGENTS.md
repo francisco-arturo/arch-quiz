@@ -1,7 +1,9 @@
 # AGENTS.md
 
-Archetype Quiz is an app that maps a user's answers to a short quiz onto a
-named archetype, then explains the result.
+Archetype Quiz is a sales archetype assessment tool: a short quiz whose answers
+are analyzed by a model into a personalized sales profile. The product is a
+Next.js app; the model call is a server-side route that talks to the DeepSeek
+API (the same model this harness runs on) — never from the browser.
 
 This file is the entry point for coding agents working in this repository. It is
 a router, not a manual: it states the invariants and points at deeper documents.
@@ -13,10 +15,9 @@ Read it completely before writing code.
 
 ## Current Status
 
-This project is greenfield: the harness exists, the product does not. The
-feature list in `feature_list.json` is a **starter plan** — it is a proposed
-decomposition, not a settled specification. Confirm or edit it before the first
-implementation session, and ask the user when a requirement is unclear.
+The MVP is built: quiz content, scoring, the DeepSeek-backed result route, and a
+mobile-first UI. The feature list in `feature_list.json` reflects the real
+product (not a placeholder). Remaining work is tracked there.
 
 ## Startup Workflow (Clock In)
 
@@ -102,17 +103,16 @@ Required checks:
 
 - `./init.sh` — harness integrity, plus product checks once the stack is chosen
 
-> **Product verification is not configured yet.** `init.sh` currently verifies
-> harness integrity only, and exits 0 while doing so. `feat-001` exists to close
-> this gap. Until a real test or build command replaces that warning, no feature
-> may be marked `done`.
+> `init.sh` runs the real product checks: `tsc --noEmit` (type-check) and
+> `next build`. Both must exit 0. The model call itself is proven by a live
+> request recorded as `feat-004`'s evidence.
 
 ## Architecture Boundaries
 
-The layer model and dependency direction belong in `docs/ARCHITECTURE.md` once
-the stack is chosen. Until then: keep quiz content (data) separate from scoring
-(logic) separate from presentation. An architectural rule that matters should
-become an enforced check rather than a paragraph someone has to remember.
+The layer model and dependency direction are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The invariant: quiz content (`lib/questions.ts`) is data, scoring (`lib/scoring.ts`)
+is logic, the model call lives only in the server route (`app/api/assess/route.ts`),
+and the API key never reaches the browser.
 
 ## Observability
 

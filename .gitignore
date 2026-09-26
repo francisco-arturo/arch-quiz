@@ -11,8 +11,18 @@ Thumbs.db
 node_modules/
 dist/
 build/
+.next/
+*.tsbuildinfo
 .venv/
 __pycache__/
 
 # Do NOT ignore dependency lockfiles: they are part of the verification
 # baseline. See AGENTS.md and docs/HARNESS.md.
+
+# Local secrets — never commit real keys
+.env
+.env.*
+!.env.example
+
+# npm cache (local to keep installs off the read-only system cache)
+.npm-cache/

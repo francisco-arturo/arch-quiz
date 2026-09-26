@@ -18,8 +18,8 @@ and each one answers a different failure mode.
 | Scope | `feature_list.json` dependencies + Definition of Done | Overreach and half-finished features |
 | Lifecycle | `session-handoff.md`, clock-in/clock-out in `AGENTS.md` | The next session starts from an unknown state |
 
-`docs/ARCHITECTURE.md` will be added once the stack is chosen; it belongs to the
-instructions subsystem as a progressive-disclosure target.
+`docs/ARCHITECTURE.md` is the progressive-disclosure target for the product's
+layer model and the model-call security boundary.
 
 ## Session Lifecycle
 
@@ -79,12 +79,13 @@ this, a future session re-litigates settled questions or silently reverses them.
 1. **Harness integrity** — required artifacts exist; `feature_list.json` parses,
    has the required fields, valid statuses, resolvable dependencies, and at most
    one `in-progress` feature. Failures here are real failures.
-2. **Product verification** — the stack's own checks, once configured.
+2. **Product verification** — for this Next.js app, `tsc --noEmit` (type-check)
+   and `next build`. Both must exit 0.
 
-If no `package.json` is present, stage 2 prints a loud warning and exits 0. That
-is deliberate: see D-003 in `DECISIONS.md`. A green harness baseline is not
-evidence that the product works, and the Definition of Done in `AGENTS.md`
-reflects that distinction.
+When `package.json` is absent (e.g. a future non-Node project), stage 2 prints a
+loud warning and exits 0 — that fallback is deliberate: see D-003 in
+`DECISIONS.md`. A green harness baseline is not evidence that the product works,
+and the Definition of Done in `AGENTS.md` reflects that distinction.
 
 ### Three verification layers
 

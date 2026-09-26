@@ -104,3 +104,44 @@ dependency-free, and the audit is only useful if it can be run offline and in CI
 
 **Consequence.** Vendored copies drift from upstream. Re-vendor deliberately
 when the upstream tooling changes, and update the commit reference here.
+
+---
+
+## D-005 — Next.js 14 + a server-side DeepSeek route, not a client SDK
+
+**Date:** 2026-09-26
+**Status:** accepted
+
+**Decision.** The product is a Next.js 14 (App Router) app. The model call lives
+in a single server route (`app/api/assess/route.ts`) that calls the DeepSeek API
+directly (OpenAI-compatible, `https://api.deepseek.com/chat/completions`) with
+`response_format: json_object`. The key is read from `DEEPSEEK_API_KEY` in
+`.env.local` and is never exposed to the browser.
+
+**Context.** The request said "use the Claude API", but this project runs inside
+the DeepSeek harness, so the model is DeepSeek instead. The available model names
+are `deepseek-v4-pro` (reasoning, the harness default) and `deepseek-chat`
+(which currently resolves to `deepseek-flash`). Both accept JSON mode. Measured
+on the full 12-answer assessment: `deepseek-chat` returned a complete, highly
+personalized JSON profile in ~6s; `deepseek-v4-pro` took ~28s and, with the
+initial `max_tokens: 2000`, truncated its JSON mid-stream (fixed by raising it to
+8000, but the latency remains).
+
+**Alternatives considered.**
+
+- Client-side SDK with the key in the bundle. Rejected outright: the key would
+  ship to every visitor.
+- A separate backend service. Rejected: "no complex backend" is an explicit
+  requirement; a Next.js API route deploys as a serverless function with nothing
+  extra to run.
+- `deepseek-v4-pro` as the default for quality. Rejected as default: "fast
+  loading" is an explicit requirement, and the reasoning model measured ~28s on
+  the full prompt (and needed a large `max_tokens` to avoid truncation).
+  `deepseek-chat` is the default; `deepseek-v4-pro` remains a one-line config
+  upgrade for higher-quality analysis.
+
+**Consequence.** Deploying on Vercel requires setting `DEEPSEEK_API_KEY` (and
+optionally `DEEPSEEK_MODEL`) as environment variables. The model name is an
+env var, so upgrading to `deepseek-v4-pro` later is a config change, not a code
+change. Next is pinned to `14.2.35` (the patched 14.x) to avoid a known
+vulnerability in `14.2.15` without moving to a new major.

@@ -17,6 +17,10 @@ set -euo pipefail
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Keep npm's cache inside the workspace. This works on read-only system caches
+# (like this sandbox) and is harmless elsewhere; the directory is gitignored.
+export npm_config_cache="$PWD/.npm-cache"
+
 echo "=== Harness Initialization: archetype-quiz ==="
 
 # ── 1. Required harness artifacts ─────────────────────────────────────────────

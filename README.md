@@ -1,35 +1,68 @@
 # archetype-quiz
 
-A quiz app that maps a user's answers onto a named archetype, then explains the
-result.
+A **sales archetype assessment tool** — a Typeform-style, mobile-first quiz that
+turns a salesperson's answers into a personalized, AI-generated profile.
 
-**Status:** greenfield. The agent harness is set up; the product is not written yet.
+Answer 12 questions → the answers are analyzed by a model → you get your sales
+archetype, strengths, growth edges, communication style, best-fit roles, and
+recommendations.
 
-## Working in this repository
+## Stack
 
-This repo is built to be developed by coding agents as well as people. Start with
-[`AGENTS.md`](AGENTS.md) — it defines the startup workflow, the working rules, and
-the definition of done.
+- **Next.js 14** (App Router) — one framework, front end + one serverless API route
+- **React 18** — the quiz and results UI
+- **DeepSeek API** (OpenAI-compatible) — the model that generates the result
+- Plain CSS — no UI framework, fast load
+
+## Run it locally
 
 ```bash
-./init.sh          # single verification entrypoint; must exit 0 before you start
+npm install
+cp .env.example .env.local   # then put a real key in .env.local
+npm run dev                  # http://localhost:3000
 ```
 
-Key files:
+`DEEPSEEK_API_KEY` is read **server-side only** in `app/api/assess/route.ts` and
+is never sent to the browser.
 
-| File | Purpose |
+## Verify
+
+```bash
+./init.sh                    # harness + product checks (tsc --noEmit + next build)
+npm run typecheck
+npm run build
+```
+
+## Deploy (Vercel)
+
+1. Push this repo to GitHub.
+2. Import it in Vercel — framework auto-detected as Next.js.
+3. Add the environment variable `DEEPSEEK_API_KEY` (and optionally
+   `DEEPSEEK_MODEL`) in **Project → Settings → Environment Variables**.
+4. Deploy. The API route becomes a serverless function; no other backend needed.
+
+## How it works
+
+```
+Browser                       Server route                    DeepSeek API
+───────                       ─────────────                   ───────────
+12 answers ──POST /api/assess──> builds prompt ──HTTP──────> generates profile
+result page <────── JSON ─────── parses + grounds <──JSON────── (JSON out)
+```
+
+The client scores the answers into a per-archetype breakdown; the server sends
+both the raw answers and the breakdown to the model and asks for a structured,
+personalized profile. See `docs/ARCHITECTURE.md`.
+
+## Repo map
+
+| Path | Purpose |
 |---|---|
-| [`AGENTS.md`](AGENTS.md) | Instructions for coding agents (entry point) |
-| [`feature_list.json`](feature_list.json) | Feature state — the source of truth for what's next |
-| [`PROGRESS.md`](PROGRESS.md) | Cross-session progress log |
-| [`DECISIONS.md`](DECISIONS.md) | Decisions and their rationale |
-| [`docs/HARNESS.md`](docs/HARNESS.md) | How the harness works and how to extend it |
-| [`session-handoff.md`](session-handoff.md) | Template for handing work to the next session |
-
-## Next step
-
-`feat-001` in `feature_list.json`: choose the stack and configure real product
-verification. Until that is done, no feature can satisfy the definition of done.
-
-> Note: `feature_list.json` currently holds a **proposed** decomposition of the
-> product. Confirm or edit it before implementing.
+| `app/page.tsx` | Quiz flow + results UI (intro → questions → result) |
+| `app/api/assess/route.ts` | Server-side model call (keeps the key private) |
+| `lib/questions.ts` | 12 assessment questions with archetype weights |
+| `lib/archetypes.ts` | The six sales archetypes and their descriptions |
+| `lib/scoring.ts` | Turns answers into a score breakdown |
+| `lib/prompt.ts` | The prompt that produces the personalized profile |
+| `AGENTS.md` | Instructions for coding agents (this repo is agent-harnessed) |
+| `feature_list.json` | Feature state — what's done, what's next |

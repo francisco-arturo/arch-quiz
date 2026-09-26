@@ -5,74 +5,78 @@ session. `AGENTS.md` defines when to write here.
 
 ## Current State
 
-**Last Updated:** 2026-09-26 16:35 -03
-**Active Feature:** none — no feature has been started
+**Last Updated:** 2026-09-26 16:55 -03
+**Active Feature:** none — MVP delivered; all features `done`
 **Last commit:** see `git log -1 --oneline` (kept relative so it never goes stale)
-**Baseline (`./init.sh`):** passing, but product verification is NOT configured
+**Baseline (`./init.sh`):** passing — `tsc --noEmit` + `next build` both exit 0
 **Working tree:** clean
 
 ## Status
 
 ### What's Done
 
-- [x] Harness scaffolded: `AGENTS.md`, `feature_list.json`, `PROGRESS.md`, `init.sh`, `session-handoff.md`, `DECISIONS.md`
-- [x] `init.sh` verifies harness integrity (artifact presence, feature-list shape, WIP=1)
-- [x] Audit tooling vendored under `skills/harness-creator/` and `tools/`
+- [x] Sales archetype MVP: Next.js 14 app with a 12-question quiz and AI-generated results
+- [x] Quiz content: 6 archetypes, 12 weighted questions (`lib/`)
+- [x] Scoring: deterministic client-side breakdown (`lib/scoring.ts`)
+- [x] Model integration: `app/api/assess/route.ts` calls the DeepSeek API server-side
+- [x] UI: intro → quiz → loading → results, mobile-first, no UI framework
+- [x] Verification: typecheck + build green; live end-to-end request returned a full profile
+- [x] Key security: `DEEPSEEK_API_KEY` server-only, absent from the client bundle
 
 ### What's In Progress
 
-- [ ] Nothing. No feature is active. WIP=1.
+- [ ] Nothing. WIP=1.
 
 ### What's Next
 
-1. Decide the product stack (language, framework, test runner) with the user
-2. Review the proposed feature decomposition in `feature_list.json` and edit it to match the real intent
-3. Start `feat-001` (Verification Baseline) and close the product-verification gap
+1. (You) Run `npm run dev` and take the quiz in a real browser, including on a phone.
+2. (You) Deploy: push to GitHub → import in Vercel → set `DEEPSEEK_API_KEY`.
+3. Optional: swap `DEEPSEEK_MODEL` to `deepseek-v4-pro` for deeper analysis (~28s) vs `deepseek-chat` (~6s).
 
 ## Next Steps
 
-The three items above are the actionable queue. `feat-001` is the only feature
-that is unblocked right now; everything else depends on it.
+The MVP is feature-complete. Remaining work is human QA and deployment — no new
+code is required to go live.
 
 ## Blockers / Risks
 
-- [ ] **Product verification is not configured.** `./init.sh` exits 0 while verifying
-      only the harness. Impact: a green baseline does not prove the app works, so
-      there is currently no way to satisfy the Definition of Done. Mitigation:
-      `feat-001` is a hard gate for every other feature.
-- [ ] **Stack is undecided.** Impact: `docs/ARCHITECTURE.md`, the lockfile, and the
-      real verification commands all depend on it. Mitigation: resolve before
-      starting `feat-002`.
-- [ ] **The feature list is a proposal, not a specification.** Impact: an agent
-      could implement the wrong product. Mitigation: confirm it with the user
-      before the first implementation session.
+- [ ] **No automated test suite yet.** Verification is `tsc` + `next build` plus a
+      manual live request. A Vitest suite for `lib/scoring.ts` and a route-level
+      test would harden this; not required for the MVP.
+- [ ] **Visual QA pending.** The UI compiles and serves, but has not been eyeballed
+      on real devices. Mobile CSS is responsive by design but unverified by a human.
+- [ ] **Model speed/quality tradeoff.** Default is `deepseek-chat` (~6s). `deepseek-v4-pro`
+      is higher-quality but ~28s and needs `max_tokens` headroom for reasoning.
 
 ## Decisions Made
 
-- **Harness uses the `harness-creator` conventions** (five subsystems, `status`
-  field). Context: see `DECISIONS.md` for the full record and the known
-  divergence from `tools/audit-harness.sh`.
+- **Stack and model boundary** — see `DECISIONS.md` D-005: Next.js 14, single
+  server-side DeepSeek route, fast model as default.
+- **Harness conventions** — see `DECISIONS.md` D-001–D-004 (unchanged).
 
 ## Files Modified This Session
 
-- `AGENTS.md` — rewritten for archetype-quiz; startup workflow, constraints, Definition of Done
-- `feature_list.json` — replaced generic placeholders with a proposed decomposition
-- `PROGRESS.md` — this file (canonical state log)
-- `progress.md` — symlink to `PROGRESS.md` (compatibility with the validator)
-- `init.sh` — real integrity checks instead of the generated placeholder
-- `session-handoff.md` — retained as the session template
-- `DECISIONS.md`, `docs/HARNESS.md`, `README.md`, `.gitignore` — added
-- `skills/harness-creator/`, `tools/audit-harness.sh` — vendored from upstream
+- `package.json`, `tsconfig.json`, `next.config.mjs` — Next.js 14 project
+- `app/page.tsx` — quiz flow + results UI
+- `app/api/assess/route.ts` — server-side DeepSeek call (key stays server-only)
+- `app/layout.tsx`, `app/globals.css` — shell + design system
+- `lib/types.ts`, `lib/archetypes.ts`, `lib/questions.ts`, `lib/scoring.ts`, `lib/prompt.ts` — content + logic
+- `docs/ARCHITECTURE.md` — added
+- `AGENTS.md`, `README.md`, `feature_list.json`, `PROGRESS.md`, `DECISIONS.md` — updated to the real product
+- `.env.example` — added; `.env.local` — created (gitignored)
+- `.gitignore` — ignores `.env*` and the local npm cache
 
 ## Evidence of Completion
 
-- [x] `./init.sh` exits 0: harness integrity checks pass, product verification warns
-- [x] `node skills/harness-creator/scripts/validate-harness.mjs --target .` — see below
-- [x] `bash tools/audit-harness.sh .` — see below
-- [ ] Product tests pass: not applicable yet, no product code exists
+- [x] `npm run typecheck` → exit 0
+- [x] `npm run build` → exit 0 (page static, `/api/assess` dynamic)
+- [x] `./init.sh` → exit 0 (harness integrity + typecheck + build)
+- [x] `POST /api/assess` (12 answers) → HTTP 200, ~6s, full Challenger profile
+- [x] Negative: 4 answers → HTTP 400; GET → HTTP 405
+- [x] Security: API key absent from `.next/static`
 
 ## Notes for Next Session
 
-The harness is complete and green; the product is empty. The single most useful
-thing to do next is to choose the stack, because it unblocks `feat-001`, which in
-turn unblocks everything else. Do not start `feat-002` before `feat-001` is `done`.
+The product works end to end. To run: `npm install && cp .env.example .env.local`
+(fill the key) `&& npm run dev`. The key in `.env.local` came from this
+environment's DeepSeek credentials and is intentionally not committed.
