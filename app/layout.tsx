@@ -20,7 +20,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <header className="topbar">
+          <span className="wordmark">Archetype</span>
+        </header>
+        {children}
+      </body>
     </html>
   );
 }

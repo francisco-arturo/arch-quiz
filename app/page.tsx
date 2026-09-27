@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { QUESTIONS } from '@/lib/questions';
-import { ARCHETYPES, archetypeById } from '@/lib/archetypes';
+import { ARCHETYPES } from '@/lib/archetypes';
 import type { Answer, AssessmentResult } from '@/lib/types';
 
 type Phase = 'intro' | 'quiz' | 'loading' | 'results' | 'error';
@@ -76,11 +76,6 @@ export default function Home() {
     }
   }
 
-  const primaryArchetype = useMemo(
-    () => (result?.archetypeId ? archetypeById(result.archetypeId) : undefined),
-    [result]
-  );
-
   return (
     <main className="shell">
       <div className="card">
@@ -98,9 +93,7 @@ export default function Home() {
           />
         )}
         {phase === 'loading' && <Loading />}
-        {phase === 'results' && result && (
-          <Results result={result} archetype={primaryArchetype} onRetake={start} />
-        )}
+        {phase === 'results' && result && <Results result={result} onRetake={start} />}
         {phase === 'error' && <ErrorView message={error} onRetry={() => setPhase('quiz')} />}
       </div>
     </main>
@@ -110,26 +103,17 @@ export default function Home() {
 function Intro({ onStart }: { onStart: () => void }) {
   return (
     <>
-      <span className="brand">
-        <span className="brand-dot" />
-        Sales Archetype Assessment
-      </span>
       <h1>What kind of seller are you?</h1>
       <p className="lede">
-        Answer 12 quick questions and get a personalized, AI-generated profile of your
-        sales personality — your natural strengths, blind spots, communication style,
-        and the roles where you will thrive.
+        Answer twelve questions about how you actually sell, and get a profile of
+        your natural strengths, blind spots, communication style, and the roles
+        where you do your best work.
       </p>
-      <div className="meta-row">
-        <span className="pill">12 questions</span>
-        <span className="pill">~3 minutes</span>
-        <span className="pill">AI-powered result</span>
-      </div>
+      <p className="meta">12 questions · about 3 minutes</p>
       <button className="btn btn-primary btn-block" onClick={onStart}>
         Start the assessment
       </button>
       <p className="footer">
-        Six archetypes, one of them is you — <br />
         {ARCHETYPES.map((a) => a.name).join(' · ')}
       </p>
     </>
@@ -162,7 +146,7 @@ function Quiz({
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
         <span className="progress-count">
-          {index + 1}/{total}
+          {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
         </span>
       </div>
 
@@ -196,31 +180,25 @@ function Quiz({
 function Loading() {
   return (
     <div className="loading">
-      <div className="spinner" />
-      <h2 className="loading-title">Analyzing your answers…</h2>
-      <p className="loading-sub">
-        The model is reading your instincts and building your profile.
-      </p>
+      <div className="dots">
+        <span />
+        <span />
+        <span />
+      </div>
+      <h2 className="loading-title">Analyzing your answers</h2>
+      <p className="loading-sub">Reading your instincts and drafting your profile.</p>
     </div>
   );
 }
 
-function Results({
-  result,
-  archetype,
-  onRetake,
-}: {
-  result: AssessmentResult;
-  archetype?: { emoji: string };
-  onRetake: () => void;
-}) {
+function Results({ result, onRetake }: { result: AssessmentResult; onRetake: () => void }) {
   const breakdown = Array.isArray(result.breakdown) ? result.breakdown : [];
   const maxScore = Math.max(...breakdown.map((b) => b.score), 1);
 
   return (
     <>
       <div className="result-hero">
-        <div className="emoji">{archetype?.emoji ?? '🎯'}</div>
+        <div className="kicker">Your archetype</div>
         <h2 className="archetype-name">{result.archetype}</h2>
         {result.headline && <p className="headline">{result.headline}</p>}
         {result.summary && <p className="summary">{result.summary}</p>}
@@ -228,33 +206,27 @@ function Results({
 
       {result.strengths && result.strengths.length > 0 && (
         <Section title="Natural strengths">
-          <div className="chips">
+          <ul className="list positive">
             {result.strengths.map((item) => (
-              <span className="chip positive" key={item}>
-                {item}
-              </span>
+              <li key={item}>{item}</li>
             ))}
-          </div>
+          </ul>
         </Section>
       )}
 
       {result.weaknesses && result.weaknesses.length > 0 && (
         <Section title="Growth edges">
-          <div className="chips">
+          <ul className="list negative">
             {result.weaknesses.map((item) => (
-              <span className="chip negative" key={item}>
-                {item}
-              </span>
+              <li key={item}>{item}</li>
             ))}
-          </div>
+          </ul>
         </Section>
       )}
 
       {result.communicationStyle && (
         <Section title="Communication style">
-          <p className="summary" style={{ margin: 0, textAlign: 'left' }}>
-            {result.communicationStyle}
-          </p>
+          <p className="summary">{result.communicationStyle}</p>
         </Section>
       )}
 
@@ -312,9 +284,7 @@ function Results({
           Retake the assessment
         </button>
       </div>
-      <p className="footer">
-        Generated by AI from your answers — a starting point, not a verdict.
-      </p>
+      <p className="footer">Generated from your answers — a starting point, not a verdict.</p>
     </>
   );
 }
